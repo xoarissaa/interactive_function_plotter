@@ -1,0 +1,2 @@
+"Function (e.g., x**2, np.sin(x), np.exp(-x))",X Min,X Max,Resolution,output,timestamp
+x**2,'-10,10,100,.gradio\flagged\output\7d18569bfba259d26ebd\plot.png,2025-03-12 13:02:38.051016
