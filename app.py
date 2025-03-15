@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import gradio as gr
-import matplotlib.colors as mcolors  # Import color conversion module
+import matplotlib.colors as mcolors
+import os  # Import os to handle file paths
 
 def hex_to_rgb(hex_color):
     """Convert HEX color (e.g., '#ff5733') to an RGB tuple for Matplotlib."""
@@ -21,7 +22,7 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
             y_values = func(x_values)
 
             # Convert HEX color to RGB before passing to Matplotlib
-            rgb_color = hex_to_rgb(color) 
+            rgb_color = hex_to_rgb(color)
 
             plt.plot(x_values, y_values, label=f"f(x) = {func_text}", color=rgb_color, linestyle=linestyle)
 
@@ -29,15 +30,17 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
         plt.ylabel("f(x)")
         plt.title("Function Plot")
         plt.legend()
-        
+
         if grid:
             plt.grid()
 
+        # Save the plot as an absolute path
         plot_filename = "high_res_plot.png"
-        plt.savefig(plot_filename, dpi=300)  # Save high-res plot
+        abs_path = os.path.abspath(plot_filename)  # Convert to absolute path
+        plt.savefig(abs_path, dpi=300)
         plt.close()
 
-        return plot_filename, plot_filename
+        return abs_path, abs_path  # Return the absolute path for Gradio to use
 
     except Exception as e:
         return f"Error: {e}", None
