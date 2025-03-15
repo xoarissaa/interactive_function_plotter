@@ -2,22 +2,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 import gradio as gr
 import os  
+import re  
 
-# Function to convert HEX color to normalized RGB tuple
-def hex_to_rgb(hex_color):
-    """Convert HEX color (#RRGGBB) to Matplotlib RGB tuple (R, G, B)."""
-    hex_color = hex_color.lstrip("#")  # Remove '#' if present
-    rgb = tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))  # Normalize (0-1)
-    return rgb  # Matplotlib needs RGB values between 0-1
+
+def rgba_to_hex(rgba_str):
+    """Converts an RGBA string (e.g., 'rgba(24.6, 187.3, 155.0, 1)') to a HEX color."""
+    match = re.match(r"rgba\((\d+(\.\d+)?),\s*(\d+(\.\d+)?),\s*(\d+(\.\d+)?),\s*\d+(\.\d+)?\)", rgba_str)
+    if match:
+        r, g, b = map(lambda x: int(float(x)), [match.group(1), match.group(3), match.group(5)])
+        return "#{:02x}{:02x}{:02x}".format(r, g, b) 
 
 def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
     try:
-        # Ensure color is valid; fallback to black if empty
-        if not color or not color.startswith("#") or len(color) != 7:
-            color = "#000000"  # Default to black
+        print(f"DEBUG: Received color - {color}")  
 
-        # Convert HEX to RGB and normalize it
-        color_rgb = hex_to_rgb(color)
+        if "rgba" in color:
+            color = rgba_to_hex(color)
+        print(f"DEBUG: Using fixed color - {color}")  
 
         x_values = np.linspace(x_min, x_max, resolution)
         functions = func_str.split(",")
@@ -29,8 +30,7 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
             func = lambda x: eval(func_text, {"x": x, "np": np})
             y_values = func(x_values)
 
-            # Use normalized RGB color for Matplotlib
-            plt.plot(x_values, y_values, label=f"f(x) = {func_text}", color=color_rgb, linestyle=linestyle)
+            plt.plot(x_values, y_values, label=f"f(x) = {func_text}", color=color, linestyle=linestyle)
 
         plt.xlabel("x")
         plt.ylabel("f(x)")
@@ -39,19 +39,15 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
         if grid:
             plt.grid()
 
-        # Save the plot and return absolute path
         plot_filename = "high_res_plot.png"
-        abs_path = os.path.abspath(plot_filename)  # Convert to absolute path
+        abs_path = os.path.abspath(plot_filename)
         plt.savefig(abs_path, dpi=300)
         plt.close()
 
-        # Ensure the file exists before returning
-        if os.path.exists(abs_path):
-            return abs_path, abs_path
-        else:
-            return "Error: Plot file was not created", None
+        return abs_path, abs_path if os.path.exists(abs_path) else ("Error: Plot file was not created", None)
 
     except Exception as e:
+        print(f"ERROR: {e}")  
         return f"Error: {e}", None
 
 # Gradio Interface
@@ -64,8 +60,8 @@ with gr.Blocks() as demo:
             x_min = gr.Number(label="X Min", value=-10)
             x_max = gr.Number(label="X Max", value=10)
             resolution = gr.Slider(10, 1000, step=10, label="Resolution", value=100)
-            color = gr.ColorPicker(label="Line Color", value="#000000")  # Default to black
-            linestyle = gr.Dropdown(["solid", "dashed", "dotted", "dashdot"], label="Line Style")
+            color = gr.ColorPicker(label="Line Color", value="#ff0000")  # Default to red
+            linestyle = gr.Dropdown(["solid", "dashed", "dotted", "dashdot"], label="Line Style", value="solid")
             grid = gr.Checkbox(label="Show Grid", value=True)
             submit_button = gr.Button("Plot Function")
 
