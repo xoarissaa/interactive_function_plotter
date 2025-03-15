@@ -6,6 +6,8 @@ import os  # Import os to handle file paths
 
 def hex_to_rgb(hex_color):
     """Convert HEX color (e.g., '#ff5733') to an RGB tuple for Matplotlib."""
+    if hex_color is None:  # If no color is selected, default to black
+        hex_color = "#000000"
     rgb = mcolors.hex2color(hex_color)  # Convert HEX to RGB
     return rgb
 
@@ -21,7 +23,7 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
             func = lambda x: eval(func_text, {"x": x, "np": np})
             y_values = func(x_values)
 
-            # Convert HEX color to RGB before passing to Matplotlib
+            # Ensure a valid color is provided, defaulting to black
             rgb_color = hex_to_rgb(color)
 
             plt.plot(x_values, y_values, label=f"f(x) = {func_text}", color=rgb_color, linestyle=linestyle)
@@ -55,7 +57,7 @@ with gr.Blocks() as demo:
             x_min = gr.Number(label="X Min", value=-10)
             x_max = gr.Number(label="X Max", value=10)
             resolution = gr.Slider(10, 1000, step=10, label="Resolution", value=100)
-            color = gr.ColorPicker(label="Line Color")
+            color = gr.ColorPicker(label="Line Color", value="#000000")  # Set default to black
             linestyle = gr.Dropdown(["solid", "dashed", "dotted", "dashdot"], label="Line Style")
             grid = gr.Checkbox(label="Show Grid", value=True)
             submit_button = gr.Button("Plot Function")
