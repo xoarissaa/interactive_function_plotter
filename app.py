@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 import gradio as gr
 import os  
 
-# Function to convert HEX color to RGB tuple
+# Function to convert HEX color to normalized RGB tuple
 def hex_to_rgb(hex_color):
     """Convert HEX color (#RRGGBB) to Matplotlib RGB tuple (R, G, B)."""
-    hex_color = hex_color.lstrip("#")  # Remove #
-    rgb = tuple(int(hex_color[i:i+2], 16)/255 for i in (0, 2, 4))  # Convert to (R, G, B)
-    return rgb  # Matplotlib expects RGB (not HEX)
+    hex_color = hex_color.lstrip("#")  # Remove '#' if present
+    rgb = tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))  # Normalize (0-1)
+    return rgb  # Matplotlib needs RGB values between 0-1
 
 def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
     try:
@@ -16,7 +16,7 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
         if not color or not color.startswith("#") or len(color) != 7:
             color = "#000000"  # Default to black
 
-        # Convert HEX to RGB
+        # Convert HEX to RGB and normalize it
         color_rgb = hex_to_rgb(color)
 
         x_values = np.linspace(x_min, x_max, resolution)
@@ -29,7 +29,7 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
             func = lambda x: eval(func_text, {"x": x, "np": np})
             y_values = func(x_values)
 
-            # Use RGB color for Matplotlib
+            # Use normalized RGB color for Matplotlib
             plt.plot(x_values, y_values, label=f"f(x) = {func_text}", color=color_rgb, linestyle=linestyle)
 
         plt.xlabel("x")
