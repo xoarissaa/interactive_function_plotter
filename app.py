@@ -29,11 +29,17 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
         if grid:
             plt.grid()
 
-        plot_filename = os.path.abspath("high_res_plot.png")
-        plt.savefig(plot_filename, dpi=300)
+        # Save the plot correctly and return an absolute path
+        plot_filename = "high_res_plot.png"
+        abs_path = os.path.abspath(plot_filename)  # Convert to absolute path
+        plt.savefig(abs_path, dpi=300)
         plt.close()
 
-        return plot_filename, plot_filename
+        # Ensure the file exists before returning
+        if os.path.exists(abs_path):
+            return abs_path, abs_path
+        else:
+            return "Error: Plot file was not created", None
 
     except Exception as e:
         return f"Error: {e}", None
