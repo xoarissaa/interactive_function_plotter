@@ -1,6 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import gradio as gr
+import matplotlib.colors as mcolors  # Import color conversion module
+
+def hex_to_rgb(hex_color):
+    """Convert HEX color (e.g., '#ff5733') to an RGB tuple for Matplotlib."""
+    rgb = mcolors.hex2color(hex_color)  # Convert HEX to RGB
+    return rgb
 
 def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
     try:
@@ -13,7 +19,11 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
             func_text = func_text.strip()
             func = lambda x: eval(func_text, {"x": x, "np": np})
             y_values = func(x_values)
-            plt.plot(x_values, y_values, label=f"f(x) = {func_text}", color=color, linestyle=linestyle)
+
+            # Convert HEX color to RGB before passing to Matplotlib
+            rgb_color = hex_to_rgb(color) 
+
+            plt.plot(x_values, y_values, label=f"f(x) = {func_text}", color=rgb_color, linestyle=linestyle)
 
         plt.xlabel("x")
         plt.ylabel("f(x)")
@@ -23,9 +33,11 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
         if grid:
             plt.grid()
 
-        plt.savefig("high_res_plot.png", dpi=300)  # Save high-res plot
+        plot_filename = "high_res_plot.png"
+        plt.savefig(plot_filename, dpi=300)  # Save high-res plot
         plt.close()
-        return "high_res_plot.png", "high_res_plot.png"
+
+        return plot_filename, plot_filename
 
     except Exception as e:
         return f"Error: {e}", None
@@ -49,12 +61,10 @@ with gr.Blocks() as demo:
             output_image = gr.Image(label="Function Plot")
             download_button = gr.File(label="Download High-Res Plot")
 
-    # Ensure this line is correctly aligned within gr.Blocks()
     submit_button.click(
         plot_function, 
         inputs=[func_str, x_min, x_max, resolution, color, linestyle, grid], 
         outputs=[output_image, download_button]
     )
 
-# Ensure this is correctly aligned with gr.Blocks()
 demo.launch()
