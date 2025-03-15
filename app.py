@@ -2,14 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import gradio as gr
 import matplotlib.colors as mcolors
-import os  
+import os  # For handling file paths
 
 def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
     try:
-        # Ensure a valid color (default to black if None)
-        color = color if color else "#000000"
-        rgb_color = mcolors.hex2color(color)  # Convert HEX to RGB
-        
+        # Ensure a valid color (default to black if None or invalid)
+        if not color or not color.startswith("#") or len(color) != 7:
+            color = "#000000"  # Default to black
+
+        rgba_color = mcolors.to_rgba(color)  # Convert HEX to RGBA
+
         x_values = np.linspace(x_min, x_max, resolution)
         functions = func_str.split(",")
 
@@ -19,7 +21,7 @@ def plot_function(func_str, x_min, x_max, resolution, color, linestyle, grid):
             func_text = func_text.strip()
             func = lambda x: eval(func_text, {"x": x, "np": np})
             y_values = func(x_values)
-            plt.plot(x_values, y_values, label=f"f(x) = {func_text}", color=rgb_color, linestyle=linestyle)
+            plt.plot(x_values, y_values, label=f"f(x) = {func_text}", color=rgba_color, linestyle=linestyle)
 
         plt.xlabel("x")
         plt.ylabel("f(x)")
